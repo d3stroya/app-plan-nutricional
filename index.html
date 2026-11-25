@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a6c8b"><title>Mi plan</title>
+<style>
+:root{--bg:#eaf0f2;--card:#fff;--tx:#12232b;--mu:#5f7480;--ac:#0a6c8b;--ac2:#d5ebf2;--ok:#1c9a63;--bd:#d9e3e7}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1a1f;--card:#17262d;--tx:#e6eef1;--mu:#8fa5b0;--ac:#4cb8d6;--ac2:#1c3b47;--ok:#3ecf8e;--bd:#26394122}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums;padding:env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom))}
+main{max-width:640px;margin:0 auto;padding:12px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.hd{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.hd h1{flex:1;margin:0;font-size:1.25rem;text-align:center}
+.hd button{border:1px solid var(--bd);background:var(--card);border-radius:10px;min-width:42px;height:42px}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.strip button{border:1px solid var(--bd);background:var(--card);border-radius:12px;padding:6px 0;display:flex;flex-direction:column;align-items:center;font-size:.8rem;color:var(--mu)}
+.strip b{font-size:1.05rem;color:var(--tx)}
+.strip .on{background:var(--ac);border-color:var(--ac)}.strip .on,.strip .on b{color:#fff}
+.mu{color:var(--mu);font-size:.9rem;margin:6px 2px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.pad{padding:12px 14px}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:13px 14px;font-weight:650;font-size:1.05rem}
+.mh.full{color:var(--ok)}
+.bd{padding:0 14px 10px}
+.pt{font-size:.8rem;color:var(--mu);margin:10px 0 2px}
+.op{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--bd);padding:11px 6px;border-radius:0}
+.op::before{content:"";flex:none;width:22px;height:22px;border:2px solid var(--mu);border-radius:50%;margin-top:1px}
+.op.on{background:var(--ac2);font-weight:600}
+.op.on::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff;font-size:14px;line-height:18px;text-align:center}
+.dim{opacity:.35;pointer-events:none}
+.lib{margin-top:8px;border:1px dashed var(--mu);background:none;border-radius:10px;padding:8px 12px;color:var(--mu)}
+.lib.on{background:var(--ac2);border:1px solid var(--ac);color:var(--tx)}
+.chk{border:1px solid var(--ac);background:none;border-radius:999px;padding:6px 14px;color:var(--ac);font-weight:600}
+.chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+ul{list-style:none;margin:0;padding:0 14px 8px}
+li{padding:9px 0;border-top:1px solid var(--bd)}li span{display:block;color:var(--mu);font-size:.88rem}
+h2{margin:0 0 8px;font-size:1.05rem}
+label{display:block;font-size:.85rem;color:var(--mu)}
+input{width:100%;margin:3px 0 8px;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.pri{width:100%;border:0;background:var(--ac);color:#fff;border-radius:12px;padding:12px;font-weight:650}
+.sec{border:1px solid var(--bd);background:var(--card);border-radius:10px;padding:9px 14px;margin:0 6px 6px 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{padding:7px 5px;text-align:right;border-top:1px solid var(--bd)}th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:500}
+td button{border:0;background:none;color:var(--mu)}
+.sw{overflow-x:auto}
+#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
+#nav button{flex:1;border:0;background:none;padding:14px 0;color:var(--mu);font-weight:600}
+#nav .on{color:var(--ac);box-shadow:inset 0 3px 0 var(--ac)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:1px}
+</style></head><body>
+<main id="app"></main>
+<nav id="nav"><button data-tab="plan">Plan</button><button data-tab="ent">Entreno</button><button data-tab="prog">Progreso</button></nav>
+<script src="plan.js"></script>
+<script>
+const $=s=>document.querySelector(s),K='miplan.v1',MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],
+DL=['L','M','X','J','V','S','D'],DN=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+let S;try{S=JSON.parse(localStorage.getItem(K))||{}}catch(e){S={}}
+S.chk=S.chk||{};S.tr=S.tr||{};S.med=S.med||[];
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const iso=d=>{const z=new Date(d-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const dow=d=>(d.getDay()+6)%7,fd=d=>d.getDate()+' '+MES[d.getMonth()];
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const mon=d=>add(d,-dow(d)),today=()=>{const d=new Date();d.setHours(12,0,0,0);return d};
+let tab='plan',cur=today(),op={};
+const head=t=>`<div class="hd"><button data-nav="-1" aria-label="Anterior">‹</button><h1>${t}</h1><button data-nav="1" aria-label="Siguiente">›</button><button data-hoy>Hoy</button></div>`;
+function libres(d){let n=0;const m=mon(d);for(let i=0;i<7;i++){const c=S.chk[iso(add(m,i))]||{};for(let j=0;j<4;j++)if(c[j+'.L'])n++}return n}
+
+function plan(){
+ const k=iso(cur),c=S.chk[k]||{},dia=PLAN.dias[PLAN.semana[dow(cur)]],m=mon(cur);
+ let h=head(DN[dow(cur)]+' '+fd(cur));
+ h+='<div class="strip">'+DL.map((l,i)=>{const x=add(m,i);return `<button class="${iso(x)==k?'on':''}" data-day="${iso(x)}">${l}<b>${x.getDate()}</b></button>`}).join('')+'</div>';
+ h+=`<p class="mu">Comidas libres esta semana: ${libres(cur)}/3</p>`;
+ dia.forEach((pts,i)=>{
+  const lib=c[i+'.L'],n=pts.filter((_,p)=>c[i+'.'+p]!=null).length,full=lib||n==pts.length,open=op[i]!==false;
+  h+=`<div class="card"><div class="mh ${full?'full':''}" data-t="${i}"><span>${PLAN.comidas[i]}</span><span>${lib?'Libre':n+'/'+pts.length}${full?' ✓':''}</span></div>`;
+  if(open){
+   h+=`<div class="bd"><div class="${lib?'dim':''}">`+pts.map((o,p)=>`<div class="pt">${o.length>1?`Punto ${p+1} · elige 1 de ${o.length}`:`Punto ${p+1}`}</div>`+o.map((t,j)=>`<button class="op ${c[i+'.'+p]===j?'on':''}" data-m="${i}" data-p="${p}" data-o="${j}">${t}</button>`).join('')).join('')+`</div><button class="lib ${lib?'on':''}" data-l="${i}">${lib?'Comida libre ✓':'Marcar como comida libre'}</button></div>`;
+  }
+  h+='</div>';
+ });
+ h+=`<div class="card"><div class="mh" data-nt="1"><span>Indicaciones</span><span>${op.n?'−':'+'}</span></div>${op.n?'<ul>'+PLAN.notas.map(t=>`<li>${t}</li>`).join('')+'</ul>':''}</div>`;
+ return h;
+}
+
+function ent(){
+ const w=iso(mon(cur)),t=S.tr[w]||{};
+ let h=head('Semana del '+fd(mon(cur)))+`<p class="mu">${PLAN.notaEnt}</p>`;
+ PLAN.ent.forEach((e,i)=>{
+  h+=`<div class="card"><div class="mh"><span>${e.n}</span><button class="chk ${t[i]?'on':''}" data-done="${i}">${t[i]?'✓ Hecho':'Marcar hecho'}</button></div><ul>`
+  +'<li><b>Calentamiento</b>'+e.cal.map(x=>`<span>${x}</span>`).join('')+'</li>'
+  +e.ej.map(x=>`<li><b>${x[0]}</b><span>${x[2]} · descanso ${x[1]}</span></li>`).join('')+'</ul></div>';
+ });
+ const n=PLAN.ent.filter((_,i)=>t[i]).length;
+ return h+`<p class="mu">Sesiones hechas esta semana: ${n}/${PLAN.ent.length}</p>`;
+}
+
+function prog(){
+ const M=S.med,l=M[M.length-1]||{},F=[['mp','p','Peso (kg)'],['mb','b','Brazo (cm)'],['mc','c','Cintura (cm)'],['mh','h','Cadera (cm)'],['ml','l','Pierna (cm)']];
+ let h=`<div class="card pad"><h2>Nuevo registro</h2><label>Fecha<input id="mf" type="date" value="${iso(new Date())}"></label><div class="g">`+F.map(([id,k,t])=>`<label>${t}<input id="${id}" inputmode="decimal" placeholder="${l[k]??''}"></label>`).join('')+`</div><button class="pri" data-add>Guardar registro</button></div>`;
+ const pts=M.filter(x=>x.p!=null);
+ if(pts.length>1){
+  const v=pts.map(x=>x.p),mn=Math.min(...v),mx=Math.max(...v),r=mx-mn||1,
+  P=pts.map((x,i)=>[10+i*280/(pts.length-1),72-(x.p-mn)/r*58]);
+  h+=`<div class="card pad"><h2>Peso</h2><svg viewBox="0 0 300 90" width="100%" role="img" aria-label="Evolución del peso"><polyline points="${P.map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="var(--ac)" stroke-width="2.5"/>${P.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--ac)"/>`).join('')}</svg><p class="mu" style="margin:0">De ${mn} a ${mx} kg</p></div>`;
+ }
+ h+='<div class="card pad"><h2>Historial</h2>';
+ h+=M.length?'<div class="sw"><table><tr><th>Fecha</th><th>Peso</th><th>Brazo</th><th>Cint.</th><th>Cad.</th><th>Pierna</th><th></th></tr>'+M.map((x,i)=>`<tr><td>${x.f.slice(8)}/${x.f.slice(5,7)}/${x.f.slice(2,4)}</td>${['p','b','c','h','l'].map(k=>`<td>${x[k]??'–'}</td>`).join('')}<td><button data-del="${i}" aria-label="Borrar registro">✕</button></td></tr>`).reverse().join('')+'</table></div>':'<p class="mu">Aún no hay registros. Guarda el primero arriba.</p>';
+ h+='</div><div class="card pad"><h2>Copia de seguridad</h2><p class="mu" style="margin-top:0">Los datos se guardan solo en este navegador. Exporta una copia para no perderlos o pasarlos a otro móvil.</p><button class="sec" data-exp>Exportar copia</button><button class="sec" data-imp>Importar copia</button><input id="file" type="file" accept="application/json" hidden></div>';
+ return h;
+}
+
+function draw(){
+ const y=scrollY;
+ document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab==tab));
+ $('#app').innerHTML=tab=='plan'?plan():tab=='ent'?ent():prog();
+ scrollTo(0,y);
+}
+function addMed(){
+ const g=id=>{const v=parseFloat(($('#'+id).value||'').replace(',','.'));return isNaN(v)?null:v};
+ const r={f:$('#mf').value||iso(new Date()),p:g('mp'),b:g('mb'),c:g('mc'),h:g('mh'),l:g('ml')};
+ if([r.p,r.b,r.c,r.h,r.l].every(v=>v==null))return;
+ S.med=S.med.filter(x=>x.f!=r.f).concat(r).sort((a,b)=>a.f<b.f?-1:1);save();draw();
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button,[data-t],[data-nt]');if(!b)return;const D=b.dataset;
+ if(D.tab){tab=D.tab;cur=cur;scrollTo(0,0);return draw()}
+ if(D.nav){cur=add(cur,(tab=='ent'?7:1)*+D.nav);return draw()}
+ if('hoy' in D){cur=today();return draw()}
+ if(D.day){cur=new Date(D.day+'T12:00:00');return draw()}
+ if(D.t!==undefined){op[D.t]=op[D.t]===false;return draw()}
+ if(D.nt){op.n=!op.n;return draw()}
+ if(D.o!==undefined){const k=iso(cur),c=S.chk[k]=S.chk[k]||{},key=D.m+'.'+D.p;if(c[key]===+D.o)delete c[key];else c[key]=+D.o;save();return draw()}
+ if(D.l!==undefined){const k=iso(cur),c=S.chk[k]=S.chk[k]||{},key=D.l+'.L';if(c[key])delete c[key];else c[key]=1;save();return draw()}
+ if(D.done!==undefined){const w=iso(mon(cur)),t=S.tr[w]=S.tr[w]||{};t[D.done]=!t[D.done];save();return draw()}
+ if(D.del!==undefined){S.med.splice(+D.del,1);save();return draw()}
+ if('add' in D)return addMed();
+ if('exp' in D){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='mi-plan-copia-'+iso(new Date())+'.json';a.click();return}
+ if('imp' in D)return $('#file').click();
+});
+document.addEventListener('change',e=>{
+ if(e.target.id!='file'||!e.target.files[0])return;
+ const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);S={chk:o.chk||{},tr:o.tr||{},med:o.med||[]};save();draw();alert('Copia importada.')}catch(x){alert('No se pudo leer el archivo.')}};
+ r.readAsText(e.target.files[0]);
+});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+draw();
+</script></body></html>
